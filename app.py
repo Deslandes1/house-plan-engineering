@@ -15,7 +15,7 @@ st.markdown("Switch between **2D engineering drawing** and **3D interactive mode
 
 view = st.sidebar.radio("Select view:", ["2D Blueprint", "3D Model"])
 
-# ---------- 2D BLUEPRINT (unchanged, works) ----------
+# ---------- 2D BLUEPRINT ----------
 def draw_house_plan():
     fig, ax = plt.subplots(figsize=(12, 10))
     ax.set_xlim(-5, 25)
@@ -92,7 +92,7 @@ def draw_house_plan():
 
     return fig
 
-# ---------- 3D MODEL (raw HTML/JS, using components.html) ----------
+# ---------- 3D MODEL (COMPLETE HTML) ----------
 def get_3d_html():
     return """
 <!DOCTYPE html>
@@ -465,11 +465,10 @@ if view == "2D Blueprint":
         - **Blue arcs & lines**: Doors (arc = swing direction)  
         - **Blue thick segments**: Windows  
         - **Red arrows**: Dimensions (meters)  
-        - **Green dashed lines**: Property boundaries (yard, parking)  
+        - **Green dashed lines**: Property boundaries  
         - 2D blueprint (top‑down view)
         """)
 else:
     st.markdown("### 🏡 3D Interactive Model – Triangular Roof, Balcony, Exit Door & More")
     st.markdown("_Drag to rotate, right‑click to pan, scroll to zoom._")
-    # Use components.html – it will work despite deprecation warning
     components.html(get_3d_html(), height=700, scrolling=False)
