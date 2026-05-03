@@ -1,5 +1,4 @@
 import streamlit as st
-import streamlit.components.v1 as components
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.font_manager import FontProperties
@@ -13,9 +12,10 @@ st.set_page_config(
 st.title("🏠 Architectural House Plan")
 st.markdown("Switch between **2D engineering drawing** and **3D interactive model**.")
 
+# Sidebar toggle
 view = st.sidebar.radio("Select view:", ["2D Blueprint", "3D Model"])
 
-# ---------- 2D BLUEPRINT (unchanged, works) ----------
+# ---------- 2D DRAWING (unchanged, works) ----------
 def draw_house_plan():
     fig, ax = plt.subplots(figsize=(12, 10))
     ax.set_xlim(-5, 25)
@@ -37,7 +37,7 @@ def draw_house_plan():
     ax.plot([14, 18], [4, 4], 'k-', linewidth=4)
     ax.plot([14, 14], [4, 7], 'k-', linewidth=4)
 
-    # Doors (arcs)
+    # Doors
     door1 = patches.Arc((10, 3), 1.2, 1.2, theta1=270, theta2=360, linewidth=2, color='blue')
     ax.add_patch(door1)
     ax.plot([10, 10.6], [3, 3], 'b-', linewidth=2)
@@ -64,7 +64,7 @@ def draw_house_plan():
     ax.plot([12, 14], [12, 12], 'b-', linewidth=3)
     ax.plot([18, 18], [9, 11], 'b-', linewidth=3)
 
-    # Room labels
+    # Labels
     font = FontProperties(weight='bold', size=10)
     ax.text(5, 6, "LIVING ROOM", ha='center', va='center', fontproperties=font, bbox=dict(facecolor='white', alpha=0.7))
     ax.text(14, 3, "KITCHEN", ha='center', va='center', fontproperties=font, bbox=dict(facecolor='white', alpha=0.7))
@@ -81,7 +81,7 @@ def draw_house_plan():
     ax.annotate('', xy=(0, -1.2), xytext=(10, -1.2), arrowprops=dict(arrowstyle='<->', color='red', lw=1))
     ax.text(5, -1.7, "10.0 m", ha='center', color='red', fontsize=8)
 
-    # Yard / parking boundaries
+    # Yard/parking boundaries
     ax.plot([-3, -3], [-2, 14], 'g--', linewidth=1, alpha=0.6)
     ax.plot([21, 21], [-2, 14], 'g--', linewidth=1, alpha=0.6)
     ax.plot([-3, 21], [14, 14], 'g--', linewidth=1, alpha=0.6)
@@ -92,29 +92,47 @@ def draw_house_plan():
 
     return fig
 
-# ---------- 3D MODEL (raw HTML/JS, using components.html) ----------
+# ---------- 3D VIEW (embedded as HTML with srcdoc via JavaScript) ----------
 def get_3d_html():
-    return """
-<!DOCTYPE html>
+    return """<!DOCTYPE html>
 <html>
 <head>
     <style>
-        body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
+        body { margin: 0; overflow: hidden; font-family: Arial, Helvetica, sans-serif; }
         #info {
-            position: absolute; top: 20px; left: 20px; color: white;
-            background: rgba(0,0,0,0.6); padding: 8px 15px; border-radius: 8px;
-            pointer-events: none; z-index: 100; font-size: 14px;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0,0,0,0.6);
+            padding: 8px 15px;
+            border-radius: 8px;
+            pointer-events: none;
+            z-index: 100;
+            font-size: 14px;
         }
         #controls-note {
-            position: absolute; bottom: 20px; left: 20px; color: #ccc;
-            background: rgba(0,0,0,0.5); padding: 4px 10px; border-radius: 6px;
-            font-size: 12px; pointer-events: none; z-index: 100;
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: #ccc;
+            background: rgba(0,0,0,0.5);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 100;
         }
     </style>
 </head>
 <body>
-    <div id="info">🏡 3D House Model – Tri roof | Balcony | Exit door | Fence | Doghouse</div>
-    <div id="controls-note">🖱️ Drag rotate | Right-click pan | Scroll zoom</div>
+    <div id="info">
+        <strong>🏡 3D House Model</strong><br>
+        Triangular roof | Balcony | Exit door | Fence | Doghouse
+    </div>
+    <div id="controls-note">
+        🖱️ Drag to rotate | Right-click to pan | Scroll to zoom
+    </div>
 
     <script type="importmap">
         {
@@ -130,6 +148,7 @@ def get_3d_html():
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 
+        // --- Setup ---
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x0a1030);
         scene.fog = new THREE.FogExp2(0x0a1030, 0.008);
@@ -159,7 +178,7 @@ def get_3d_html():
         controls.panSpeed = 0.8;
         controls.target.set(9, 3, 6);
 
-        // Lighting
+        // --- Lighting ---
         const ambientLight = new THREE.AmbientLight(0x404060);
         scene.add(ambientLight);
         const dirLight = new THREE.DirectionalLight(0xffffff, 1);
@@ -175,20 +194,21 @@ def get_3d_html():
         rimLight.position.set(0, 5, 15);
         scene.add(rimLight);
 
-        // Ground & Yards
+        // --- Ground & Yards ---
         const grassMat = new THREE.MeshStandardMaterial({ color: 0x5a9e4e, roughness: 0.8 });
         const frontYard = new THREE.Mesh(new THREE.PlaneGeometry(24, 6), grassMat);
         frontYard.rotation.x = -Math.PI/2;
         frontYard.position.set(9, -0.1, -3);
         frontYard.receiveShadow = true;
         scene.add(frontYard);
+        
         const backYard = new THREE.Mesh(new THREE.PlaneGeometry(24, 6), grassMat);
         backYard.rotation.x = -Math.PI/2;
         backYard.position.set(9, -0.1, 15);
         backYard.receiveShadow = true;
         scene.add(backYard);
 
-        // Parking
+        // --- Parking ---
         const asphaltMat = new THREE.MeshStandardMaterial({ color: 0x444444, roughness: 0.7 });
         const parking = new THREE.Mesh(new THREE.PlaneGeometry(5, 8), asphaltMat);
         parking.rotation.x = -Math.PI/2;
@@ -203,7 +223,7 @@ def get_3d_html():
             scene.add(line);
         }
 
-        // Fence
+        // --- Fence ---
         const fenceMat = new THREE.MeshStandardMaterial({ color: 0xbc9a6c });
         const postMat = new THREE.MeshStandardMaterial({ color: 0x8b5a2b });
         const fencePoints = [[-3, -2], [21, -2], [21, 14], [-3, 14], [-3, -2]];
@@ -231,7 +251,7 @@ def get_3d_html():
             }
         }
 
-        // House walls
+        // --- House Walls ---
         const wallMat = new THREE.MeshStandardMaterial({ color: 0xcdc9c9, roughness: 0.4 });
         const thickness = 0.3;
         const wallHeight = 3.0;
@@ -253,7 +273,7 @@ def get_3d_html():
         addWall(16, 4, 4, thickness);
         addWall(14, 5.5, thickness, 3);
 
-        // Doors
+        // --- Doors (3D) ---
         const doorMat = new THREE.MeshStandardMaterial({ color: 0x8B5A2B });
         const knobMat = new THREE.MeshStandardMaterial({ color: 0xFFD700 });
         const doorFront = new THREE.Mesh(new THREE.BoxGeometry(1.0, 2.0, 0.1), doorMat);
@@ -263,6 +283,7 @@ def get_3d_html():
         const knobFront = new THREE.Mesh(new THREE.SphereGeometry(0.08), knobMat);
         knobFront.position.set(5, 1.0, 0.12);
         scene.add(knobFront);
+        
         const doorInt = new THREE.Mesh(new THREE.BoxGeometry(0.1, 2.0, 1.0), doorMat);
         doorInt.position.set(10.05, 1.0, 3);
         doorInt.castShadow = true;
@@ -270,6 +291,7 @@ def get_3d_html():
         const knobInt = new THREE.Mesh(new THREE.SphereGeometry(0.08), knobMat);
         knobInt.position.set(10.12, 1.0, 3);
         scene.add(knobInt);
+        
         const doorBath = new THREE.Mesh(new THREE.BoxGeometry(0.1, 2.0, 0.8), doorMat);
         doorBath.position.set(14.05, 1.0, 4);
         doorBath.castShadow = true;
@@ -278,7 +300,7 @@ def get_3d_html():
         knobBath.position.set(14.12, 1.0, 4);
         scene.add(knobBath);
 
-        // Porch
+        // --- Porch ---
         const porchMat = new THREE.MeshStandardMaterial({ color: 0xc2b280 });
         const porchBase = new THREE.Mesh(new THREE.BoxGeometry(4, 0.2, 2.5), porchMat);
         porchBase.position.set(5, 0, -1.2);
@@ -297,7 +319,7 @@ def get_3d_html():
             scene.add(post);
         });
 
-        // Doghouse
+        // --- Doghouse ---
         const dogMat = new THREE.MeshStandardMaterial({ color: 0xaa8c5e });
         const dogBase = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.5, 1.2), dogMat);
         dogBase.position.set(14, 0.25, 14);
@@ -313,14 +335,14 @@ def get_3d_html():
         dogDoor.position.set(14.3, 0.3, 14);
         scene.add(dogDoor);
 
-        // Floor
+        // --- Floor (semi-transparent) ---
         const floorMat = new THREE.MeshStandardMaterial({ color: 0xbc9a6c, roughness: 0.6, metalness: 0.05, transparent: true, opacity: 0.4 });
         const floor = new THREE.Mesh(new THREE.BoxGeometry(18, 0.1, 12), floorMat);
         floor.position.set(9, -0.05, 6);
         floor.receiveShadow = true;
         scene.add(floor);
 
-        // Triangular roof
+        // --- Triangular Roof ---
         const roofHeight = 1.8;
         const ridgeHeight = wallHeight + roofHeight;
         const leftSlope = new THREE.BoxGeometry(9, 0.2, 12);
@@ -339,7 +361,7 @@ def get_3d_html():
         ridgeCap.castShadow = true;
         scene.add(ridgeCap);
 
-        // Roof balcony
+        // --- Roof Balcony ---
         const balconyY = ridgeHeight - 0.6;
         const balconyWidth = 4, balconyDepth = 3;
         const balconyX = 13.5 + 1;
@@ -350,17 +372,19 @@ def get_3d_html():
         balconyBase.castShadow = true;
         scene.add(balconyBase);
         const railMat = new THREE.MeshStandardMaterial({ color: 0xaa9977 });
-        const railH = 0.8, railT = 0.1;
-        const addRail = (x, z, w, d) => {
+        const railH = 0.8;
+        const railT = 0.1;
+        const addRail = (x, z, w, d, rot) => {
             const rail = new THREE.Mesh(new THREE.BoxGeometry(w, railH, d), railMat);
             rail.position.set(x, balconyY + railH/2, z);
             rail.castShadow = true;
             scene.add(rail);
         };
-        addRail(balconyX, balconyZ - balconyDepth/2, balconyWidth, railT);
-        addRail(balconyX, balconyZ + balconyDepth/2, balconyWidth, railT);
-        addRail(balconyX - balconyWidth/2, balconyZ, railT, balconyDepth);
-        addRail(balconyX + balconyWidth/2, balconyZ, railT, balconyDepth);
+        addRail(balconyX, balconyZ - balconyDepth/2, balconyWidth, railT, 0);
+        addRail(balconyX, balconyZ + balconyDepth/2, balconyWidth, railT, 0);
+        addRail(balconyX - balconyWidth/2, balconyZ, railT, balconyDepth, 0);
+        addRail(balconyX + balconyWidth/2, balconyZ, railT, balconyDepth, 0);
+        // Table & chair
         const tableMatObj = new THREE.MeshStandardMaterial({ color: 0x8B5A2B });
         const table = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.5, 0.8), tableMatObj);
         table.position.set(balconyX - 0.5, balconyY + 0.3, balconyZ);
@@ -376,7 +400,7 @@ def get_3d_html():
         chairBack.castShadow = true;
         scene.add(chairBack);
 
-        // Exit door structure
+        // --- Exit Door (stairwell) ---
         const exitX = 4.5 - 1.5;
         const exitZ = 6;
         const exitW = 1.2, exitH = 1.8, exitD = 1.5;
@@ -406,7 +430,7 @@ def get_3d_html():
             scene.add(step);
         }
 
-        // CSS2D Labels
+        // --- CSS2D Labels ---
         function makeLabel(text, x, z, yOffset = 0.2) {
             const div = document.createElement('div');
             div.textContent = text;
@@ -435,6 +459,7 @@ def get_3d_html():
         makeLabel('ROOF BALCONY', balconyX, balconyZ, balconyY + 0.6);
         makeLabel('EXIT DOOR', exitX, exitZ, balconyY + 1.0);
 
+        // --- Animation Loop ---
         function animate() {
             requestAnimationFrame(animate);
             controls.update();
@@ -443,6 +468,7 @@ def get_3d_html():
         }
         animate();
 
+        // --- Handle window resize ---
         window.addEventListener('resize', onWindowResize);
         function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
@@ -452,8 +478,7 @@ def get_3d_html():
         }
     </script>
 </body>
-</html>
-    """
+</html>"""
 
 # ---------- DISPLAY ----------
 if view == "2D Blueprint":
@@ -471,5 +496,7 @@ if view == "2D Blueprint":
 else:
     st.markdown("### 🏡 3D Interactive Model – Triangular Roof, Balcony, Exit Door & More")
     st.markdown("_Drag to rotate, right‑click to pan, scroll to zoom._")
-    # Use components.html – it will work despite deprecation warning
-    components.html(get_3d_html(), height=700, scrolling=False)
+    # Use an iframe with srcdoc (pure HTML/CSS/JS) inside st.markdown
+    # This avoids deprecation warnings and works reliably.
+    iframe_code = f'<iframe srcdoc="{get_3d_html().replace('"', '&quot;')}" width="100%" height="700" style="border:none;"></iframe>'
+    st.markdown(iframe_code, unsafe_allow_html=True)
