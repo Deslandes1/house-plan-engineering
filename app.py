@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.font_manager import FontProperties
@@ -15,7 +16,7 @@ st.markdown("Switch between **2D engineering drawing** and **3D interactive mode
 # ---------- SIDEBAR TOGGLE ----------
 view = st.sidebar.radio("Select view:", ["2D Blueprint", "3D Model"])
 
-# ---------- 2D DRAWING FUNCTION (unchanged) ----------
+# ---------- 2D DRAWING FUNCTION (same as before) ----------
 def draw_house_plan():
     fig, ax = plt.subplots(figsize=(12, 10))
     ax.set_xlim(-5, 25)
@@ -92,7 +93,7 @@ def draw_house_plan():
 
     return fig
 
-# ---------- 3D VIEW HTML (unchanged content) ----------
+# ---------- 3D VIEW HTML (unchanged, same as before) ----------
 def get_3d_html():
     return """
     <!DOCTYPE html>
@@ -473,5 +474,5 @@ if view == "2D Blueprint":
 else:
     st.markdown("### 🏡 3D Interactive Model – With Triangular Roof, Balcony & Exit Door")
     st.markdown("_Drag to rotate, right‑click to pan, scroll to zoom._")
-    # Use st.iframe with srcdoc (replaces st.components.v1.html)
-    st.iframe(srcdoc=get_3d_html(), width="100%", height=700)
+    # Use components.html (safe until June 2026)
+    components.html(get_3d_html(), height=700, scrolling=False)
