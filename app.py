@@ -1,9 +1,7 @@
 import streamlit as st
-import streamlit.components.v1 as components
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.font_manager import FontProperties
-import numpy as np
 
 st.set_page_config(
     page_title="House Plan | 2D Blueprint & 3D Model",
@@ -94,8 +92,8 @@ def draw_house_plan():
 
     return fig
 
-# ---------- 3D VIEW (Three.js) with triangular roof, balcony, exit door ----------
-def generate_3d_house():
+# ---------- 3D VIEW HTML (unchanged content) ----------
+def get_3d_html():
     return """
     <!DOCTYPE html>
     <html>
@@ -135,7 +133,6 @@ def generate_3d_house():
             import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
             import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 
-            // Setup
             const scene = new THREE.Scene();
             scene.background = new THREE.Color(0x111122);
             scene.fog = new THREE.FogExp2(0x111122, 0.008);
@@ -165,7 +162,6 @@ def generate_3d_house():
             controls.panSpeed = 0.8;
             controls.target.set(9, 3, 6);
 
-            // Lighting
             const ambientLight = new THREE.AmbientLight(0x404060);
             scene.add(ambientLight);
             const dirLight = new THREE.DirectionalLight(0xffffff, 1);
@@ -181,7 +177,6 @@ def generate_3d_house():
             rimLight.position.set(0, 5, 15);
             scene.add(rimLight);
 
-            // Ground / Yards
             const grassMat = new THREE.MeshStandardMaterial({ color: 0x5a9e4e, roughness: 0.8 });
             const frontYard = new THREE.Mesh(new THREE.PlaneGeometry(24, 6), grassMat);
             frontYard.rotation.x = -Math.PI/2;
@@ -195,7 +190,6 @@ def generate_3d_house():
             backYard.receiveShadow = true;
             scene.add(backYard);
 
-            // Parking
             const asphalt = new THREE.MeshStandardMaterial({ color: 0x444444, roughness: 0.7 });
             const parking = new THREE.Mesh(new THREE.PlaneGeometry(5, 8), asphalt);
             parking.rotation.x = -Math.PI/2;
@@ -210,7 +204,6 @@ def generate_3d_house():
                 scene.add(line);
             }
 
-            // Fence
             const fenceMaterial = new THREE.MeshStandardMaterial({ color: 0xbc9a6c });
             const postMat = new THREE.MeshStandardMaterial({ color: 0x8b5a2b });
             const fencePoints = [[-3, -2], [21, -2], [21, 14], [-3, 14], [-3, -2]];
@@ -238,7 +231,6 @@ def generate_3d_house():
                 }
             }
 
-            // House walls (same as before)
             const wallMaterial = new THREE.MeshStandardMaterial({ color: 0xcdc9c9, roughness: 0.4 });
             const thickness = 0.3;
             const wallHeight = 3.0;
@@ -260,7 +252,6 @@ def generate_3d_house():
             addWall(16, 4, 4, thickness);
             addWall(14, 5.5, thickness, 3);
 
-            // Doors (3D)
             const doorMaterial = new THREE.MeshStandardMaterial({ color: 0x8B5A2B });
             const knobMat = new THREE.MeshStandardMaterial({ color: 0xFFD700 });
             const doorFront = new THREE.Mesh(new THREE.BoxGeometry(1.0, 2.0, 0.1), doorMaterial);
@@ -287,7 +278,6 @@ def generate_3d_house():
             knobBath.position.set(14.12, 1.0, 4);
             scene.add(knobBath);
 
-            // Porch
             const porchMaterial = new THREE.MeshStandardMaterial({ color: 0xc2b280 });
             const porchBase = new THREE.Mesh(new THREE.BoxGeometry(4, 0.2, 2.5), porchMaterial);
             porchBase.position.set(5, 0, -1.2);
@@ -305,7 +295,6 @@ def generate_3d_house():
                 scene.add(post);
             });
 
-            // Doghouse
             const dogMat = new THREE.MeshStandardMaterial({ color: 0xaa8c5e });
             const dogBase = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.5, 1.2), dogMat);
             dogBase.position.set(14, 0.25, 14);
@@ -320,79 +309,60 @@ def generate_3d_house():
             dogDoor.position.set(14.3, 0.3, 14);
             scene.add(dogDoor);
 
-            // Floor (semi-transparent)
             const floorMat = new THREE.MeshStandardMaterial({ color: 0xbc9a6c, roughness: 0.6, metalness: 0.05, transparent: true, opacity: 0.5 });
             const floor = new THREE.Mesh(new THREE.BoxGeometry(18, 0.1, 12), floorMat);
             floor.position.set(9, -0.05, 6);
             floor.receiveShadow = true;
             scene.add(floor);
 
-            // *** TRIANGULAR (GABLED) ROOF with BALCONY & EXIT DOOR ***
-            const roofMatMain = new THREE.MeshStandardMaterial({ color: 0xaa7777, roughness: 0.6 });
-            const roofHeight = 1.8;    // peak height above walls
-            const houseWidth = 18;
-            const houseDepth = 12;
-            // Create a gabled roof using an extruded shape or two rotated boxes.
-            // We'll make a single triangular prism for simplicity: a box rotated 45°? Better: CylinderGeometry with 4 sides rotated gives pyramid, not gable.
-            // For a gable, we can create two half-roofs as rotated boxes.
-            const roofLength = houseDepth; // along Z
-            const roofWidth = houseWidth;   // along X
+            // Triangular roof
+            const roofHeight = 1.8;
             const ridgeHeight = wallHeight + roofHeight;
-            // Left roof slope (from ridge to left wall)
-            const leftSlope = new THREE.BoxGeometry(houseWidth/2, 0.2, roofLength);
-            leftSlope.rotation.x = -Math.atan2(roofHeight, houseWidth/2);
-            leftSlope.position.set(9 - houseWidth/4, ridgeHeight - roofHeight/2, 6);
+            const leftSlope = new THREE.BoxGeometry(9, 0.2, 12);
+            leftSlope.rotation.x = -Math.atan2(roofHeight, 9);
+            leftSlope.position.set(4.5, ridgeHeight - roofHeight/2, 6);
             leftSlope.castShadow = true;
             scene.add(leftSlope);
-            // Right roof slope
-            const rightSlope = new THREE.BoxGeometry(houseWidth/2, 0.2, roofLength);
-            rightSlope.rotation.x = Math.atan2(roofHeight, houseWidth/2);
-            rightSlope.position.set(9 + houseWidth/4, ridgeHeight - roofHeight/2, 6);
+            const rightSlope = new THREE.BoxGeometry(9, 0.2, 12);
+            rightSlope.rotation.x = Math.atan2(roofHeight, 9);
+            rightSlope.position.set(13.5, ridgeHeight - roofHeight/2, 6);
             rightSlope.castShadow = true;
             scene.add(rightSlope);
-            // Add ridge cap (thin box)
-            const ridgeCap = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.2, roofLength), new THREE.MeshStandardMaterial({ color: 0xaa8866 }));
+            const ridgeCap = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.2, 12), new THREE.MeshStandardMaterial({ color: 0xaa8866 }));
             ridgeCap.position.set(9, ridgeHeight - 0.1, 6);
             ridgeCap.castShadow = true;
             scene.add(ridgeCap);
 
-            // ---- BALCONY on top of the roof (flat area on one side) ----
-            // We'll create a flat platform on the right side of the roof (above the right slope) at y = ridgeHeight - 0.5
+            // Balcony on roof
             const balconyY = ridgeHeight - 0.6;
             const balconyWidth = 4;
             const balconyDepth = 3;
-            const balconyX = 9 + houseWidth/4 + 1;
+            const balconyX = 13.5 + 1;
             const balconyZ = 6;
             const balconyMat = new THREE.MeshStandardMaterial({ color: 0xc2b280 });
             const balconyBase = new THREE.Mesh(new THREE.BoxGeometry(balconyWidth, 0.2, balconyDepth), balconyMat);
             balconyBase.position.set(balconyX, balconyY, balconyZ);
             balconyBase.castShadow = true;
             scene.add(balconyBase);
-            // Railing around balcony
             const railMat = new THREE.MeshStandardMaterial({ color: 0xaa9977 });
             const railHeight = 0.8;
             const railThick = 0.1;
-            // front rail (along X)
             const frontRail = new THREE.Mesh(new THREE.BoxGeometry(balconyWidth, railHeight, railThick), railMat);
             frontRail.position.set(balconyX, balconyY + railHeight/2, balconyZ - balconyDepth/2);
             frontRail.castShadow = true;
             scene.add(frontRail);
-            // back rail
             const backRail = new THREE.Mesh(new THREE.BoxGeometry(balconyWidth, railHeight, railThick), railMat);
             backRail.position.set(balconyX, balconyY + railHeight/2, balconyZ + balconyDepth/2);
             backRail.castShadow = true;
             scene.add(backRail);
-            // left rail (along Z)
             const leftRail = new THREE.Mesh(new THREE.BoxGeometry(railThick, railHeight, balconyDepth), railMat);
             leftRail.position.set(balconyX - balconyWidth/2, balconyY + railHeight/2, balconyZ);
             leftRail.castShadow = true;
             scene.add(leftRail);
-            // right rail
             const rightRail = new THREE.Mesh(new THREE.BoxGeometry(railThick, railHeight, balconyDepth), railMat);
             rightRail.position.set(balconyX + balconyWidth/2, balconyY + railHeight/2, balconyZ);
             rightRail.castShadow = true;
             scene.add(rightRail);
-            // Add a small table and chair on balcony (simple boxes)
             const tableMat = new THREE.MeshStandardMaterial({ color: 0x8B5A2B });
             const table = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.5, 0.8), tableMat);
             table.position.set(balconyX - 0.5, balconyY + 0.3, balconyZ);
@@ -408,9 +378,8 @@ def generate_3d_house():
             chairBack.castShadow = true;
             scene.add(chairBack);
 
-            // ---- EXIT DOOR (stairwell / small house on roof) ----
-            // Build a small structure on the left side of the roof with a door.
-            const exitX = 9 - houseWidth/4 - 1.5;
+            // Exit door structure
+            const exitX = 4.5 - 1.5;
             const exitZ = 6;
             const exitW = 1.2;
             const exitH = 1.8;
@@ -420,14 +389,12 @@ def generate_3d_house():
             exitWalls.position.set(exitX, balconyY + exitH/2, exitZ);
             exitWalls.castShadow = true;
             scene.add(exitWalls);
-            // Roof of exit structure (small triangle)
             const exitRoofMat = new THREE.MeshStandardMaterial({ color: 0xaa7777 });
             const exitRoof = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 0.9, 0.5, 4), exitRoofMat);
             exitRoof.rotation.y = Math.PI/4;
             exitRoof.position.set(exitX, balconyY + exitH, exitZ);
             exitRoof.castShadow = true;
             scene.add(exitRoof);
-            // Door on the exit structure (facing outward)
             const exitDoor = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.4, 0.08), doorMaterial);
             exitDoor.position.set(exitX - exitW/2 + 0.05, balconyY + 0.8, exitZ);
             exitDoor.castShadow = true;
@@ -435,7 +402,6 @@ def generate_3d_house():
             const exitKnob = new THREE.Mesh(new THREE.SphereGeometry(0.07), knobMat);
             exitKnob.position.set(exitX - exitW/2 + 0.12, balconyY + 0.85, exitZ);
             scene.add(exitKnob);
-            // Stairs from roof to balcony (simple steps)
             const stepMat = new THREE.MeshStandardMaterial({ color: 0xaa8866 });
             for (let i = 0; i < 3; i++) {
                 const step = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.2, 0.6), stepMat);
@@ -444,7 +410,6 @@ def generate_3d_house():
                 scene.add(step);
             }
 
-            // Labels
             function makeLabel(text, x, z, yOffset = 1.2) {
                 const div = document.createElement('div');
                 div.textContent = text;
@@ -472,7 +437,6 @@ def generate_3d_house():
             makeLabel('ROOF BALCONY', balconyX, balconyZ, balconyY + 0.8);
             makeLabel('EXIT DOOR', exitX, exitZ, balconyY + 1.2);
 
-            // Animate
             function animate() {
                 requestAnimationFrame(animate);
                 controls.update();
@@ -493,7 +457,7 @@ def generate_3d_house():
     </html>
     """
 
-# ---------- DISPLAY ----------
+# ---------- DISPLAY SELECTED VIEW ----------
 if view == "2D Blueprint":
     fig = draw_house_plan()
     st.pyplot(fig)
@@ -509,4 +473,5 @@ if view == "2D Blueprint":
 else:
     st.markdown("### 🏡 3D Interactive Model – With Triangular Roof, Balcony & Exit Door")
     st.markdown("_Drag to rotate, right‑click to pan, scroll to zoom._")
-    components.html(generate_3d_house(), height=700, scrolling=False)
+    # Use st.iframe with srcdoc (replaces st.components.v1.html)
+    st.iframe(srcdoc=get_3d_html(), width="100%", height=700)
