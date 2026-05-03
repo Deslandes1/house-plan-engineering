@@ -3,7 +3,6 @@ import streamlit.components.v1 as components
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.font_manager import FontProperties
-import numpy as np
 
 st.set_page_config(
     page_title="House Plan | 2D Blueprint & 3D Model",
@@ -13,6 +12,35 @@ st.set_page_config(
 
 st.title("🏠 Architectural House Plan")
 st.markdown("Switch between **2D engineering drawing** and **3D interactive model**.")
+
+# ---------- SIDEBAR (YOUR INFO, LOGO, PRICING, LAND) ----------
+with st.sidebar:
+    st.markdown("## 🌍 GlobalInternet.py")
+    st.markdown("**Gesner Deslandes** – Coder in Chief")
+    st.markdown("📞 (509)-47385663  |  ✉️ deslandes78@gmail.com")
+    st.markdown("---")
+    
+    st.markdown("### 💰 Market Pricing (Competitive)")
+    st.markdown("""
+    - **Full house plan (2D + 3D):** **$1,500 USD**  
+    - **Custom modifications:** +$300  
+    - **Landscape & exterior design:** +$500  
+    - **Permit‑ready drawings:** +$700  
+    - **Complete package (all of the above):** **$2,800 USD**  
+    """)
+    st.info("💡 _Prices negotiable for volume or charity projects._")
+    
+    st.markdown("---")
+    st.markdown("### 🌎 Required Land Size")
+    st.markdown("""
+    The house shown here (18 m × 12 m footprint) plus yards, parking, and fence **requires approximately:**  
+    - **0.25 acres** (1,000 m²) for the house + immediate garden.  
+    - **0.35 – 0.5 acres** for a comfortable layout with front/back yards, parking, and doghouse.  
+    - **Recommendation:** **0.4 acres** (1,600 m²) for full privacy and room to expand.  
+    """)
+    st.caption("_Based on typical suburban zoning._")
+    st.markdown("---")
+    st.markdown("🔨 **Built by GlobalInternet.py – Python software on demand**")
 
 # ---------- SIDEBAR TOGGLE ----------
 view = st.sidebar.radio("Select view:", ["2D Blueprint", "3D Model"])
